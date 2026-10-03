@@ -18,15 +18,18 @@ DECLSPEC_IMPORT size_t __cdecl MSVCRT$strlen(const char *);
 
 static void pb_ensure(PackBuf *pb, int need) {
     while (pb->len + need > pb->cap) {
-        pb->cap *= 2;
-        pb->data = (unsigned char *)MSVCRT$realloc(pb->data, pb->cap);
+        int new_cap = pb->cap * 2;
+        unsigned char *new_data = (unsigned char *)MSVCRT$realloc(pb->data, new_cap);
+        if (!new_data) return;
+        pb->data = new_data;
+        pb->cap = new_cap;
     }
 }
 
 void pb_init(PackBuf *pb) {
-    pb->cap = 1024;
+    pb->cap  = 1024;
+    pb->len  = 0;
     pb->data = (unsigned char *)MSVCRT$malloc(pb->cap);
-    pb->len = 0;
 }
 
 void pb_pad(PackBuf *pb, unsigned char *data, int size) {
@@ -77,7 +80,10 @@ unsigned char parser_byte(Parser *p) {
 
 unsigned int parser_int32le(Parser *p) {
     if (p->pos + 4 > p->len) return 0;
-    unsigned int val = *(unsigned int *)(p->buf + p->pos);
+    unsigned int val = (unsigned int)p->buf[p->pos]
+                     | ((unsigned int)p->buf[p->pos + 1] << 8)
+                     | ((unsigned int)p->buf[p->pos + 2] << 16)
+                     | ((unsigned int)p->buf[p->pos + 3] << 24);
     p->pos += 4;
     return val;
 }

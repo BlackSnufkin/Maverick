@@ -19,3 +19,8 @@ src_listener/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+*.orig
+*.bak
+src_beacon/loader/Include/Shellcode.h
+Bin/obj/

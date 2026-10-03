@@ -37,7 +37,9 @@ static void rc4_process(unsigned char *S, unsigned char *data, int len) {
 }
 
 unsigned char *rc4_encrypt(unsigned char *data, int data_len, unsigned char *key, int *out_len) {
+    if (!data || !key || data_len <= 0) { *out_len = 0; return NULL; }
     unsigned char *buf = (unsigned char *)MSVCRT$malloc(data_len);
+    if (!buf) { *out_len = 0; return NULL; }
     MSVCRT$memcpy(buf, data, data_len);
     unsigned char S[256];
     rc4_init(S, key, RC4_KEY_SIZE);
@@ -47,7 +49,9 @@ unsigned char *rc4_encrypt(unsigned char *data, int data_len, unsigned char *key
 }
 
 unsigned char *rc4_decrypt(unsigned char *data, int data_len, unsigned char *key, int *out_len) {
+    if (!data || !key || data_len <= 0) { *out_len = 0; return NULL; }
     unsigned char *buf = (unsigned char *)MSVCRT$malloc(data_len);
+    if (!buf) { *out_len = 0; return NULL; }
     MSVCRT$memcpy(buf, data, data_len);
     unsigned char S[256];
     rc4_init(S, key, RC4_KEY_SIZE);
